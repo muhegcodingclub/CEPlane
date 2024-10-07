@@ -1,0 +1,1 @@
+The R directory is where all R scripts and RMarkdown / Quarto files related to the challenge are stored. Scripts should be named using the name or initials of the author, e.g. MattH.R / MattH.Rmd / MattH.qmd.

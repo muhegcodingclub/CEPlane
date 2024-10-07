@@ -1,0 +1,1 @@
+The output directory is where all output files generated from running challenge scripts are stored. The names of all output files should include the names or initials of the authors of the generating scripts, e.g. MattH_Figure1.png, MattH_Figure2.png. 
