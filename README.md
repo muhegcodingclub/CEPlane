@@ -1,7 +1,7 @@
 # Cost-Effectiveness Plane Challenge
 This challenge is to write code in R or Stata to generate a cost-effectiveness plane using the dataset saved in the file results.csv that is located in the data directory.
 
-Use a willingness to pay threshold of $96,000.
+Use a willingness-to-pay threshold of $96,000.
 
 If you are writing code in Stata you can write code as either a Do file, a dyndoc text file or a StataMarkdown file. Read the instructions in the README files in the relevant directory (Stata/Do, Stata/dydndoc or Stata/StataMarkdown).
 
