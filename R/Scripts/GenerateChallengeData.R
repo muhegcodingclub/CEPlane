@@ -2,7 +2,7 @@
 # remotes::install_github("ready4-dev/youthu")
 library(youthu)
 library(ggplot2)
-library(ready4use)
+# library(ready4use)
 set.seed(1234)
 ds_tb <- make_fake_ds_two()
 predn_ds_ls <- make_predn_metadata_ls(ds_tb,
@@ -26,8 +26,8 @@ ds_tb  <- ds_tb %>% add_qalys_to_ds(predn_ds_ls = predn_ds_ls,
                                     include_predrs_1L_lgl = T,
                                     reshape_1L_lgl = T)
 he_smry_ls <- ds_tb %>% make_hlth_ec_smry(predn_ds_ls = predn_ds_ls, wtp_dbl = 50000, bootstrap_iters_1L_int = 1000L)
-results_df <- data.frame(Costs = he_smry_ls[["ce_res_ls"]][["delta_c"]][[1]],
-                         QALYs = he_smry_ls[["ce_res_ls"]][["delta_e"]][[1]])
+results_df <- data.frame(IncrementalCosts = he_smry_ls[["ce_res_ls"]][["delta_c"]][[1]],
+                         IncrementalQALYs = he_smry_ls[["ce_res_ls"]][["delta_e"]][[1]])
 write.csv(results_df, "data/results.csv", row.names = FALSE)
 
 
