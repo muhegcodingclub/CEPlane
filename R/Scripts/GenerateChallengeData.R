@@ -1,5 +1,6 @@
-# install.packages("ggplot2")
-# remotes::install_github("ready4-dev/youthu")
+install.packages("ggplot2")
+install.packages("remotes")
+remotes::install_github("ready4-dev/youthu")
 library(youthu)
 library(ggplot2)
 # library(ready4use)
