@@ -1,0 +1,53 @@
+---
+title: "CE Plane"
+author: "Fikru Rizal"
+date: "2024-10-23"
+output: html_document
+---
+
+# Create CE Plane for exercise
+
+## Install & load required package
+
+Install these packages if required
+
+```{r, message = FALSE, eval = FALSE }
+install.packages("tidyverse")
+install.packages("ggplot2")
+```
+
+Load packages
+
+```{r, message = FALSE }
+library(tidyverse)
+library(ggplot2)
+```
+
+## Load dataset
+
+```{r}
+data <- read.csv("../../data/results.csv")
+```
+
+## Create Scatter Plot
+
+```{r}
+# Create the plot
+CEPlane_vanilla <- data %>%
+  ggplot(aes(y=IncrementalCosts,x=IncrementalQALYs)) +
+  geom_point(alpha=0.7) +
+  geom_hline(yintercept=0) + 
+  geom_vline(xintercept=0) +
+  geom_abline(slope = 96000, linetype = "dashed") +
+  labs(title="CE Plane",
+       x="Incremental QALYs",
+       y="Incremental Costs")
+
+# Show the plot
+CEPlane_vanilla
+
+# Save the plot as png
+ggsave("../../output/CEPlane_vanilla.png", plot = CEPlane_vanilla
+       , width = 8, height = 6, dpi = 300)
+  
+```

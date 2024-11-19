@@ -1,0 +1,198 @@
+
+---
+title: "Cost-Effectiveness Analysis using a Markov Model in R"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This document demonstrates how to perform a **cost-effectiveness analysis (CEA)** using a **Markov model** in R. We will:
+
+1. Define the model parameters.
+2. Create a Markov model with three health states: Healthy, Ill, and Death.
+3. Perform deterministic sensitivity analysis (one-way).
+4. Conduct probabilistic sensitivity analysis (Monte Carlo simulation).
+5. Visualize results using a tornado diagram, cost-effectiveness plane, and acceptability curve.
+
+---
+
+## Step 1: Load Required Packages
+
+```{r install-packages, message=FALSE}
+# Install required packages if not already installed
+if (!require("heemod")) install.packages("heemod", dependencies = TRUE)
+if (!require("decisionSupport")) install.packages("decisionSupport", dependencies = TRUE)
+if (!require("ggplot2")) install.packages("ggplot2", dependencies = TRUE)
+if (!require("dplyr")) install.packages("dplyr", dependencies = TRUE)
+```
+
+---
+
+## Step 2: Define Model Parameters
+
+```{r define-parameters}
+library(dplyr)
+
+params <- list(
+  population_size = 1000,
+  p_healthy_to_ill = 0.10,  # Transition probability
+  p_ill_to_death = 0.05,
+  p_ill_to_healthy = 0.15,
+  cost_healthy = 100,        # Cost per cycle
+  cost_ill = 1000,
+  cost_death = 0,
+  utility_healthy = 1,       # QALY weights
+  utility_ill = 0.5,
+  utility_death = 0,
+  cycles = 10,               # Time horizon
+  discount_rate = 0.03
+)
+```
+
+---
+
+## Step 3: Build the Markov Model
+
+```{r markov-model}
+library(heemod)
+
+# Define health states
+state_healthy <- define_state(
+  cost = params$cost_healthy,
+  utility = params$utility_healthy
+)
+
+state_ill <- define_state(
+  cost = params$cost_ill,
+  utility = params$utility_ill
+)
+
+state_death <- define_state(
+  cost = params$cost_death,
+  utility = params$utility_death
+)
+
+# Define transition matrix
+transition_matrix <- define_transition(
+  state_names = c("Healthy", "Ill", "Death"),
+  matrix = rbind(
+    c(0.85, 0.10, 0.05),
+    c(0.15, 0.80, 0.05),
+    c(0.00, 0.00, 1.00)
+  )
+)
+
+# Define and run the model
+model <- define_model(
+  transition = transition_matrix,
+  Healthy = state_healthy,
+  Ill = state_ill,
+  Death = state_death
+)
+
+result <- run_model(
+  model = model,
+  cycles = params$cycles,
+  cost = cost,
+  effect = utility,
+  init = c(Healthy = 1, Ill = 0, Death = 0),
+  method = "half-cycle"
+)
+print(result)
+```
+
+---
+
+## Step 4: Deterministic Sensitivity Analysis (One-Way)
+
+```{r tornado-diagram}
+sensitivity_params <- data.frame(
+  parameter = c("p_healthy_to_ill", "p_ill_to_death", "cost_ill"),
+  low = c(0.05, 0.02, 800),
+  high = c(0.20, 0.10, 1200)
+)
+
+run_sensitivity <- function(param_name, value) {
+  params[[param_name]] <- value
+  result <- run_model(model, cycles = params$cycles)
+  return(result$cost)
+}
+
+sensitivity_results <- apply(sensitivity_params, 1, function(row) {
+  low <- run_sensitivity(row["parameter"], row["low"])
+  high <- run_sensitivity(row["parameter"], row["high"])
+  c(low = low, high = high)
+})
+
+sensitivity_df <- data.frame(
+  Parameter = sensitivity_params$parameter,
+  Low = sensitivity_results[1, ],
+  High = sensitivity_results[2, ]
+)
+
+library(ggplot2)
+ggplot(sensitivity_df, aes(x = reorder(Parameter, High - Low), y = High - Low)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Tornado Diagram", x = "Parameter", y = "Impact on Cost")
+```
+
+---
+
+## Step 5: Probabilistic Sensitivity Analysis (PSA)
+
+```{r psa}
+library(decisionSupport)
+
+input_estimates <- data.frame(
+  variable = c("p_healthy_to_ill", "p_ill_to_death", "cost_ill"),
+  distribution = c("beta", "beta", "normal"),
+  lower = c(0.05, 0.02, 800),
+  upper = c(0.20, 0.10, 1200)
+)
+
+mc_simulation <- mcSimulation(
+  estimate = input_estimates,
+  model_function = function(x) run_model(model, cycles = params$cycles)$cost,
+  numberOfModelRuns = 1000
+)
+
+plot(mc_simulation, type = "cost-effectiveness-plane")
+plot(mc_simulation, type = "ceac")
+```
+
+---
+
+## Step 6: Summary Dashboard
+
+```{r summary-dashboard}
+summary <- data.frame(
+  Health_State = c("Healthy", "Ill", "Death"),
+  Average_Cost = result$cost,
+  Average_Utility = result$effect
+)
+
+print(summary)
+
+ggplot(summary, aes(x = Average_Utility, y = Average_Cost, label = Health_State)) +
+  geom_point() +
+  geom_text(vjust = -1) +
+  labs(title = "Cost vs Utility", x = "Utility (QALY)", y = "Cost")
+```
+
+---
+
+## Conclusion
+
+This document shows how to perform cost-effectiveness analysis using a Markov model in R. We explored:
+
+- Defining parameters for the model
+- Building a Markov model with three health states
+- Performing deterministic and probabilistic sensitivity analysis
+- Visualizing results with tornado diagrams, cost-effectiveness planes, and utility-cost graphs

@@ -1,0 +1,6 @@
+# Load the rmarkdown package
+library(rmarkdown)
+
+# Render the RMarkdown file to HTML and save it in the 'output' folder
+render(input = "R/Rmarkdown/FikruR.Rmd", 
+       output_file = "../../output/FikruR.html")
